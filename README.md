@@ -25,10 +25,10 @@ alembic upgrade head
 
 # Start the API server (run from the project root, not backend/)
 cd ..
-uvicorn main:app --reload --port 8080
+uvicorn main:app --reload --port 8000
 ```
 
-The API is now available at `http://localhost:8080`. Docs at `http://localhost:8080/docs`.
+The API is now available at `http://localhost:8000`. Docs at `http://localhost:8000/docs`.
 
 ### 2. Frontend
 
@@ -95,12 +95,11 @@ These category names have hardcoded meaning in the analytics engine:
 
 | Category | Behaviour |
 |---|---|
-| `Income` | Counted as income. Drives the Income vs Expenses chart and savings rate. |
+| `Income` | Excluded from expense totals. Chase credit transactions in this category are counted as income in the Income vs Expenses chart. |
 | `Money From Friends` | Counted as income separately. Shown as its own line in the chart and KPI card. Included in savings rate. |
 | `Savings` | Excluded from expense totals and spend charts. |
 | `Investments` | Excluded from expense totals and spend charts. |
-| `Transfers` | Excluded from expense totals and spend charts. |
-| anything else | Counted as an expense and shown in all spend charts. |
+| anything else (inc. `Transfers`) | Counted as an expense and shown in all spend charts. |
 
 ---
 
@@ -146,7 +145,7 @@ Click the **Recategorise** button on the Dashboard. This re-runs all rules again
 Alternatively, call the API directly:
 
 ```bash
-curl -X POST http://localhost:8080/api/transactions/recategorise
+curl -X POST http://localhost:8000/api/transactions/recategorise
 ```
 
 ---
@@ -171,7 +170,7 @@ Remove the entry from both:
 
 **Step 3 — re-apply rules and clean up existing transactions**
 
-Click **Recategorise** on the Dashboard (or `curl -X POST http://localhost:8080/api/transactions/recategorise`) to re-run rules against all auto-categorised transactions.
+Click **Recategorise** on the Dashboard (or `curl -X POST http://localhost:8000/api/transactions/recategorise`) to re-run rules against all auto-categorised transactions.
 
 If any transactions were **manually** set to the deleted category (i.e. you changed them via the UI), they will not be touched by the recategorise step. You can find and fix them on the **Transactions** page by filtering by the old category name.
 

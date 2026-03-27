@@ -172,12 +172,12 @@ export interface SummaryKPIs {
 }
 
 export async function fetchMonthlySpend(
-  startMonth?: string,
-  endMonth?: string
+  startDate?: string,
+  endDate?: string
 ): Promise<MonthlySpend[]> {
   const qs = new URLSearchParams();
-  if (startMonth) qs.set("start_month", startMonth);
-  if (endMonth) qs.set("end_month", endMonth);
+  if (startDate) qs.set("start_date", startDate);
+  if (endDate) qs.set("end_date", endDate);
   return request(`/analytics/monthly-spend-by-category?${qs}`);
 }
 
@@ -186,13 +186,13 @@ export async function fetchIncomeVsExpenses(): Promise<IncomeVsExpenses[]> {
 }
 
 export async function fetchMerchantBreakdown(
-  startMonth?: string,
-  endMonth?: string,
+  startDate?: string,
+  endDate?: string,
   limit = 20
 ): Promise<MerchantBreakdown[]> {
   const qs = new URLSearchParams();
-  if (startMonth) qs.set("start_month", startMonth);
-  if (endMonth) qs.set("end_month", endMonth);
+  if (startDate) qs.set("start_date", startDate);
+  if (endDate) qs.set("end_date", endDate);
   qs.set("limit", String(limit));
   return request(`/analytics/merchant-breakdown?${qs}`);
 }
@@ -219,12 +219,12 @@ export interface SpendingFlow {
 }
 
 export async function fetchSpendingFlow(
-  startMonth?: string,
-  endMonth?: string
+  startDate?: string,
+  endDate?: string
 ): Promise<SpendingFlow> {
   const qs = new URLSearchParams();
-  if (startMonth) qs.set("start_month", startMonth);
-  if (endMonth) qs.set("end_month", endMonth);
+  if (startDate) qs.set("start_date", startDate);
+  if (endDate) qs.set("end_date", endDate);
   return request(`/analytics/spending-flow?${qs}`);
 }
 

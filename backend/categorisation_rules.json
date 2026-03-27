@@ -1,6 +1,18 @@
 {
   "rules": [
     {
+      "pattern": "PAYPAL WESTERN",
+      "category": "Entertainment"
+    },
+    {
+      "pattern": "PHARMACIE PRINCIPAL",
+      "category": "Health & Wellness"
+    },
+    {
+      "pattern": "LIVERPOOL STATION",
+      "category": "Coffee & Snacks"
+    },
+    {
       "pattern": "SUMUP DREAM",
       "category": "Coffee & Snacks"
     },
