@@ -22,11 +22,11 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/monthly-spend-by-category", response_model=list[MonthlySpendByCategory])
 async def get_monthly_spend_by_category(
-    start_month: str | None = Query(None, description="YYYY-MM"),
-    end_month: str | None = Query(None, description="YYYY-MM"),
+    start_date: str | None = Query(None, description="YYYY-MM-DD"),
+    end_date: str | None = Query(None, description="YYYY-MM-DD"),
     session: AsyncSession = Depends(get_session),
 ) -> list[MonthlySpendByCategory]:
-    return await monthly_spend_by_category(session, start_month, end_month)
+    return await monthly_spend_by_category(session, start_date, end_date)
 
 
 @router.get("/income-vs-expenses", response_model=list[IncomeVsExpenses])
@@ -38,21 +38,21 @@ async def get_income_vs_expenses(
 
 @router.get("/merchant-breakdown", response_model=list[MerchantBreakdownItem])
 async def get_merchant_breakdown(
-    start_month: str | None = Query(None),
-    end_month: str | None = Query(None),
+    start_date: str | None = Query(None, description="YYYY-MM-DD"),
+    end_date: str | None = Query(None, description="YYYY-MM-DD"),
     limit: int = Query(20, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ) -> list[MerchantBreakdownItem]:
-    return await merchant_breakdown(session, start_month, end_month, limit)
+    return await merchant_breakdown(session, start_date, end_date, limit)
 
 
 @router.get("/spending-flow", response_model=SpendingFlow)
 async def get_spending_flow(
-    start_month: str | None = Query(None, description="YYYY-MM"),
-    end_month: str | None = Query(None, description="YYYY-MM"),
+    start_date: str | None = Query(None, description="YYYY-MM-DD"),
+    end_date: str | None = Query(None, description="YYYY-MM-DD"),
     session: AsyncSession = Depends(get_session),
 ) -> SpendingFlow:
-    return await spending_flow(session, start_month, end_month)
+    return await spending_flow(session, start_date, end_date)
 
 
 @router.get("/summary", response_model=SummaryKPIs)

@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import case, extract, func, select
+from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.statement import Statement
@@ -25,8 +25,8 @@ _CHASE_INCOME_EXCLUDE = ("Savings", "Investments", "Money From Friends")
 
 async def monthly_spend_by_category(
     session: AsyncSession,
-    start_month: str | None = None,
-    end_month: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[MonthlySpendByCategory]:
     """Group transactions by (year-month, category), excluding income/savings/credits."""
     year_col = extract("year", Transaction.date)
@@ -46,10 +46,10 @@ async def monthly_spend_by_category(
         .order_by(month_label)
     )
 
-    if start_month:
-        query = query.where(month_label >= start_month)
-    if end_month:
-        query = query.where(month_label <= end_month)
+    if start_date:
+        query = query.where(Transaction.date >= start_date)
+    if end_date:
+        query = query.where(Transaction.date <= end_date)
 
     result = await session.execute(query)
     return [
@@ -135,15 +135,11 @@ async def income_vs_expenses(
 
 async def merchant_breakdown(
     session: AsyncSession,
-    start_month: str | None = None,
-    end_month: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 20,
 ) -> list[MerchantBreakdownItem]:
     """Top N merchants by total spend."""
-    year_col = extract("year", Transaction.date)
-    month_col = extract("month", Transaction.date)
-    month_label = func.printf("%04d-%02d", year_col, month_col)
-
     query = (
         select(
             Transaction.merchant.label("merchant"),
@@ -158,10 +154,10 @@ async def merchant_breakdown(
         .limit(limit)
     )
 
-    if start_month:
-        query = query.where(month_label >= start_month)
-    if end_month:
-        query = query.where(month_label <= end_month)
+    if start_date:
+        query = query.where(Transaction.date >= start_date)
+    if end_date:
+        query = query.where(Transaction.date <= end_date)
 
     result = await session.execute(query)
     return [
@@ -174,14 +170,10 @@ async def merchant_breakdown(
 
 async def spending_flow(
     session: AsyncSession,
-    start_month: str | None = None,
-    end_month: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> SpendingFlow:
     """Flow of income → categories → top merchants."""
-    year_col = extract("year", Transaction.date)
-    month_col = extract("month", Transaction.date)
-    month_label = func.printf("%04d-%02d", year_col, month_col)
-
     # --- Income ---
     # Chase account credits, excluding savings/investments/friends
     chase_income_q = (
@@ -191,10 +183,10 @@ async def spending_flow(
         .where(Statement.source == "chase")
         .where(Transaction.category.not_in(_CHASE_INCOME_EXCLUDE))
     )
-    if start_month:
-        chase_income_q = chase_income_q.where(month_label >= start_month)
-    if end_month:
-        chase_income_q = chase_income_q.where(month_label <= end_month)
+    if start_date:
+        chase_income_q = chase_income_q.where(Transaction.date >= start_date)
+    if end_date:
+        chase_income_q = chase_income_q.where(Transaction.date <= end_date)
     total_income = Decimal(str((await session.execute(chase_income_q)).scalar() or 0))
 
     # Add Money From Friends to total income
@@ -203,10 +195,10 @@ async def spending_flow(
         .where(Transaction.is_credit == True)  # noqa: E712
         .where(Transaction.category == "Money From Friends")
     )
-    if start_month:
-        friends_flow_q = friends_flow_q.where(month_label >= start_month)
-    if end_month:
-        friends_flow_q = friends_flow_q.where(month_label <= end_month)
+    if start_date:
+        friends_flow_q = friends_flow_q.where(Transaction.date >= start_date)
+    if end_date:
+        friends_flow_q = friends_flow_q.where(Transaction.date <= end_date)
     total_income += Decimal(str((await session.execute(friends_flow_q)).scalar() or 0))
 
     # --- Spend by category (excluding savings/investments) ---
@@ -221,10 +213,10 @@ async def spending_flow(
         .group_by(Transaction.category)
         .order_by(func.sum(Transaction.amount).desc())
     )
-    if start_month:
-        cat_q = cat_q.where(month_label >= start_month)
-    if end_month:
-        cat_q = cat_q.where(month_label <= end_month)
+    if start_date:
+        cat_q = cat_q.where(Transaction.date >= start_date)
+    if end_date:
+        cat_q = cat_q.where(Transaction.date <= end_date)
     cat_rows = (await session.execute(cat_q)).all()
 
     categories: list[SpendingFlowCategory] = []
@@ -246,10 +238,10 @@ async def spending_flow(
             .order_by(func.sum(Transaction.amount).desc())
             .limit(5)
         )
-        if start_month:
-            merch_q = merch_q.where(month_label >= start_month)
-        if end_month:
-            merch_q = merch_q.where(month_label <= end_month)
+        if start_date:
+            merch_q = merch_q.where(Transaction.date >= start_date)
+        if end_date:
+            merch_q = merch_q.where(Transaction.date <= end_date)
         merch_rows = (await session.execute(merch_q)).all()
         merchants = [
             SpendingFlowMerchant(name=m.merchant, total=Decimal(str(m.total)))

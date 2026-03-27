@@ -1,14 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   clearAllData,
   recategoriseTransactions,
+  fetchImportHistory,
   fetchIncomeVsExpenses,
   fetchMerchantBreakdown,
   fetchMonthlySpend,
   fetchSpendingFlow,
   fetchSummary,
+  type StatementOut,
 } from "../api/client";
 import CategoryMonthTable from "../components/charts/CategoryMonthTable";
+import CategoryPieChart from "../components/charts/CategoryPieChart";
 import IncomeVsExpensesChart from "../components/charts/IncomeVsExpenses";
 import MerchantBreakdownChart from "../components/charts/MerchantBreakdown";
 import MonthlySpendByCategory from "../components/charts/MonthlySpendByCategory";
@@ -27,36 +30,111 @@ const cardStyle: React.CSSProperties = {
 function threeMonthsAgo(): string {
   const d = new Date();
   d.setMonth(d.getMonth() - 3);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+/** Compute the default date range from imported statement date ranges.
+ *  If both AMEX and Chase are present, intersect their ranges and snap to whole calendar months.
+ *  If only one source, return null (show all data). */
+function computeDefaultDateRange(
+  statements: StatementOut[]
+): { start: string; end: string } | null {
+  const amex = statements.filter((s) => s.source === "amex");
+  const chase = statements.filter((s) => s.source === "chase");
+
+  if (amex.length === 0 || chase.length === 0) return null;
+
+  const dates = (stmts: StatementOut[]) => {
+    const starts = stmts.map((s) => s.period_start).filter(Boolean) as string[];
+    const ends = stmts.map((s) => s.period_end).filter(Boolean) as string[];
+    if (starts.length === 0 || ends.length === 0) return null;
+    return { min: starts.sort()[0], max: ends.sort().reverse()[0] };
+  };
+
+  const amexRange = dates(amex);
+  const chaseRange = dates(chase);
+  if (!amexRange || !chaseRange) return null;
+
+  // Intersection of the two ranges
+  const overlapStart = amexRange.min > chaseRange.min ? amexRange.min : chaseRange.min;
+  const overlapEnd = amexRange.max < chaseRange.max ? amexRange.max : chaseRange.max;
+
+  if (overlapStart >= overlapEnd) return null;
+
+  // Snap to whole calendar months contained within the overlap
+  // First complete month: first day of the first month where month_start >= overlapStart
+  const os = new Date(overlapStart + "T00:00:00");
+  let firstMonth: Date;
+  if (os.getDate() === 1) {
+    firstMonth = new Date(os.getFullYear(), os.getMonth(), 1);
+  } else {
+    // Move to first day of next month
+    firstMonth = new Date(os.getFullYear(), os.getMonth() + 1, 1);
+  }
+
+  // Last complete month: last day of the last month where month_end <= overlapEnd
+  const oe = new Date(overlapEnd + "T00:00:00");
+  const lastDayOfMonth = new Date(oe.getFullYear(), oe.getMonth() + 1, 0);
+  let lastMonth: Date;
+  if (oe >= lastDayOfMonth) {
+    // The overlap end covers the full month
+    lastMonth = lastDayOfMonth;
+  } else {
+    // Move to last day of previous month
+    lastMonth = new Date(oe.getFullYear(), oe.getMonth(), 0);
+  }
+
+  if (firstMonth > lastMonth) return null;
+
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+  return { start: fmt(firstMonth), end: fmt(lastMonth) };
 }
 
 export default function Dashboard() {
-  const [startMonth, setStartMonth] = useState("");
-  const [endMonth, setEndMonth] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [defaultsApplied, setDefaultsApplied] = useState(false);
 
   const [clearing, setClearing] = useState(false);
   const [recategorising, setRecategorising] = useState(false);
 
   const categoryTableStart = useMemo(() => threeMonthsAgo(), []);
 
+  // Fetch import history to compute smart default date range
+  useEffect(() => {
+    if (defaultsApplied) return;
+    fetchImportHistory()
+      .then((statements) => {
+        const range = computeDefaultDateRange(statements);
+        if (range) {
+          setStartDate(range.start);
+          setEndDate(range.end);
+        }
+        setDefaultsApplied(true);
+      })
+      .catch(() => setDefaultsApplied(true));
+  }, [defaultsApplied]);
+
   const { data: summary, loading: summaryLoading } = useFetch(fetchSummary);
   const { data: monthlySpend } = useFetch(
-    () => fetchMonthlySpend(startMonth || undefined, endMonth || undefined),
-    [startMonth, endMonth]
+    () => fetchMonthlySpend(startDate || undefined, endDate || undefined),
+    [startDate, endDate]
   );
   const { data: incomeVsExp } = useFetch(fetchIncomeVsExpenses);
   const { data: merchants } = useFetch(
     () =>
-      fetchMerchantBreakdown(startMonth || undefined, endMonth || undefined),
-    [startMonth, endMonth]
+      fetchMerchantBreakdown(startDate || undefined, endDate || undefined),
+    [startDate, endDate]
   );
   const { data: categoryTableData, refetch: refetchCategoryTable } = useFetch(
     () => fetchMonthlySpend(categoryTableStart, undefined),
     [categoryTableStart]
   );
   const { data: spendingFlow } = useFetch(
-    () => fetchSpendingFlow(startMonth || undefined, endMonth || undefined),
-    [startMonth, endMonth]
+    () => fetchSpendingFlow(startDate || undefined, endDate || undefined),
+    [startDate, endDate]
   );
 
   return (
@@ -127,18 +205,36 @@ export default function Dashboard() {
             From
           </label>
           <input
-            type="month"
-            value={startMonth}
-            onChange={(e) => setStartMonth(e.target.value)}
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
             style={filterInputStyle}
           />
           <label style={{ fontSize: 13, color: "var(--text-muted)" }}>To</label>
           <input
-            type="month"
-            value={endMonth}
-            onChange={(e) => setEndMonth(e.target.value)}
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
             style={filterInputStyle}
           />
+          <button
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+            }}
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--border)",
+              background: "transparent",
+              color: "var(--text-muted)",
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Reset
+          </button>
         </div>
       </div>
 
@@ -209,17 +305,22 @@ export default function Dashboard() {
         </CollapsibleCard>
       </div>
 
-      {/* Row 2: Unspent Money (full width) */}
+      {/* Row 2: Spending by Category Pie Chart */}
+      <CollapsibleCard title="Spending by Category" style={{ marginBottom: 24 }}>
+        <CategoryPieChart />
+      </CollapsibleCard>
+
+      {/* Row 3: Unspent Money (full width) */}
       <CollapsibleCard title="Unspent Money per Month" style={{ marginBottom: 24 }}>
         <UnspentMoney data={incomeVsExp ?? []} />
       </CollapsibleCard>
 
-      {/* Row 3: Top Merchants */}
-      <CollapsibleCard title="Top Merchants" style={{ marginBottom: 24 }}>
+      {/* Row 4: Top Merchants (collapsed by default) */}
+      <CollapsibleCard title="Top Merchants" defaultOpen={false} style={{ marginBottom: 24 }}>
         <MerchantBreakdownChart data={merchants ?? []} />
       </CollapsibleCard>
 
-      {/* Row 4: Spending Flow (Sankey) */}
+      {/* Row 5: Spending Flow (Sankey) */}
       <CollapsibleCard title="Spending Flow" defaultOpen={false} style={{ marginBottom: 24 }}>
         {spendingFlow ? (
           <SpendingFlowChart data={spendingFlow} />
@@ -228,7 +329,7 @@ export default function Dashboard() {
         )}
       </CollapsibleCard>
 
-      {/* Row 5: Category × Month Table */}
+      {/* Row 6: Category x Month Table */}
       <CollapsibleCard title="Spending by Category — Last 3 Months" defaultOpen={false}>
         <CategoryMonthTable
           data={categoryTableData ?? []}
