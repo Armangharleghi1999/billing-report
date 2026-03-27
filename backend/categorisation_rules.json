@@ -1,0 +1,165 @@
+{
+  "rules": [
+    {
+      "pattern": "SUMUP DREAM",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "CANO CAF",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "SAVOY SUPERMA",
+      "category": "Groceries"
+    },
+    {
+      "pattern": "ROUND",
+      "category": "Savings"
+    },
+    {
+      "pattern": "ARMAN GHARLEGHI",
+      "category": "Savings"
+    },
+    {
+      "pattern": "LONDON BOROUGH",
+      "category": "Utilities"
+    },
+    {
+      "pattern": "YOUR SAVING",
+      "category": "Groceries"
+    },
+    {
+      "pattern": "MUM PIZZA",
+      "category": "Dining Out"
+    },
+    {
+      "pattern": "DOUDOUNE CLUB",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "TAVERNE DES",
+      "category": "Dining Out"
+    },
+    {
+      "pattern": "PETIT GRAND",
+      "category": "Dining Out"
+    },
+    {
+      "pattern": "PAYMENT RECEIVED",
+      "category": "Payment"
+    },
+    {
+      "pattern": "HOTEL CHOCOLAT",
+      "category": "Shopping"
+    },
+    {
+      "pattern": "HOUSEKEEP",
+      "category": "Housing"
+    },
+    {
+      "pattern": "Danielle king|To Danielle|To Emma Lacourarie",
+      "category": "To Friends & Family"
+    },
+    {
+      "pattern": "TESCO|SAINSBURY|WAITROSE|ASDA|LIDL|ALDI|WM MORRISON|MORRISONS|CO-OP|OCADO|M&S\\b",
+      "category": "Groceries"
+    },
+    {
+      "pattern": "TIAN TIAN MARKET",
+      "category": "Groceries"
+    },
+    {
+      "pattern": "REVOLUT",
+      "category": "Investments"
+    },
+    {
+      "pattern": "UBER EATS|DELIVEROO|JUST EAT|DOMINOS|PAPA JOHNS|GRUBHUB|DOORDASH|JUST-EAT",
+      "category": "Takeaway"
+    },
+    {
+      "pattern": "NETFLIX|SPOTIFY|APPLE\\.COM/BILL|DISNEY PLUS|AMAZON PRIME|NOW TV|YOUTUBE|AUDIBLE|CRUNCHYROLL|UBER ONE MEMBERSHIP",
+      "category": "Subscriptions"
+    },
+    {
+      "pattern": "TFL|TRAINLINE|NATIONAL RAIL|OYSTER|UBER TRIP|BOLT|CITYMAPPER",
+      "category": "Transport"
+    },
+    {
+      "pattern": "BRITISH AIRWAYS|BOOKING\\.COM|\\bHOTEL\\b(?!.*CHOCOLAT)|AIRBNB|EASYJET|RYANAIR",
+      "category": "Travel"
+    },
+    {
+      "pattern": "AMAZON(?!\\s*PRIME)|EBAY|ASOS|JOHN LEWIS|ARGOS|CURRYS|IKEA|UNIQLO|ABERCROMBIE|ELLIS BRIGHAM|CHARLES TYRWHITT|HACKETT|CARD FACTORY|BOBBYS FLOWERS",
+      "category": "Shopping"
+    },
+    {
+      "pattern": "BOOTS|SUPERDRUG|LLOYDS PHARMACY|SPECSAVERS|DENTAL|DOCTOR|BUPA|GYM|FITNESS|PURE GYM|CURALEAF|ROKSHAW",
+      "category": "Health & Wellness"
+    },
+    {
+      "pattern": "COSTA|STARBUCKS|CAFFE NERO|PRET|GREGGS|TIM HORTONS|BLANK STREET|SAINT ESPRESSO|BREADMEISTER|WATCHHOUSE|SEEDY CIRCLES|GAILS|COUNTRY KITCHEN",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "JPMCB|FROM 3305",
+      "category": "Income"
+    },
+    {
+      "pattern": "SALARY|WAGES|BACS CREDIT|PAYROLL|EMPLOYER",
+      "category": "Income"
+    },
+    {
+      "pattern": "CHASE SAVER",
+      "category": "Savings"
+    },
+    {
+      "pattern": "MONEYBOX",
+      "category": "Investments"
+    },
+    {
+      "pattern": "NANDOS|WAGAMAMA|PIZZA ?EXPRESS|MCDONALD|KFC|BURGER KING|SUBWAY|ZIZZI|FIVE GUYS|DISHOOM|NOVILHO|DINES\\*|DIRTY MARTINI|HONI POKE|ITSU|POPEYES|AL MASAR|MELROSE AND MORGAN|FRONT OF HOUSE|JPMC VE",
+      "category": "Dining Out"
+    },
+    {
+      "pattern": "FOUNDERS ARMS|DOGGETTS|WETHERSPOON|FAMOUS THREE|DOUBLE SEVEN|CAFE ROYAL",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "VODAFONE|O2|THREE|\\bEE\\b|VIRGIN|SKY|\\bBT\\b|PLUSNET|TALKTALK",
+      "category": "Telecoms"
+    },
+    {
+      "pattern": "COUNCIL TAX|\\bWATER\\b|\\bGAS\\b|ELECTRIC|BRITISH GAS|EDF|OCTOPUS|BULB|EON",
+      "category": "Utilities"
+    },
+    {
+      "pattern": "RENT|MORTGAGE|LETTING|ESTATE AGENT",
+      "category": "Housing"
+    },
+    {
+      "pattern": "CINEMA|ODEON|CINEWORLD|VUE|THEATRE|CONCERT|TICKETMASTER|EVENTBRITE|STEAM GAMES",
+      "category": "Entertainment"
+    },
+    {
+      "pattern": "WATERSTONES|WATERSTONE'S|WHSMITH|BOOK|KINDLE",
+      "category": "Books & Education"
+    },
+    {
+      "pattern": "BARBER|HAIR|SALON|SPA|BEAUTY|ELEPHANT BARBERS",
+      "category": "Personal Care"
+    },
+    {
+      "pattern": "TRANSFER|MONZO",
+      "category": "Transfers"
+    },
+    {
+      "pattern": "From ",
+      "category": "Money From Friends"
+    },
+    {
+      "pattern": "STRIPE",
+      "category": "Rent and Bills"
+    }
+  ],
+  "default_category": "Other"
+}

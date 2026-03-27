@@ -1,0 +1,69 @@
+import { NavLink, Route, Routes } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
+import Upload from "./pages/Upload";
+
+const navItems = [
+  { to: "/", label: "Dashboard" },
+  { to: "/upload", label: "Upload" },
+  { to: "/transactions", label: "Transactions" },
+];
+
+export default function App() {
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <nav
+        style={{
+          width: 220,
+          background: "var(--bg-card)",
+          borderRight: "1px solid var(--border)",
+          padding: "24px 16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+          flexShrink: 0,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            marginBottom: 24,
+            color: "var(--primary)",
+          }}
+        >
+          Spending Visualiser
+        </h1>
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            style={({ isActive }) => ({
+              display: "block",
+              padding: "10px 14px",
+              borderRadius: "var(--radius)",
+              color: isActive ? "#fff" : "var(--text-muted)",
+              background: isActive ? "var(--primary)" : "transparent",
+              fontWeight: isActive ? 600 : 400,
+              fontSize: 14,
+              transition: "all 0.15s",
+            })}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Main content */}
+      <main style={{ flex: 1, padding: "32px 40px", overflowY: "auto" }}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/transactions" element={<Transactions />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
