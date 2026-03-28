@@ -38,7 +38,7 @@ const CATEGORIES = [
   "Transfers",
   "Travel",
   "Utilities",
-];
+].sort();
 
 interface Props {
   data: MonthlySpend[];

@@ -29,7 +29,7 @@ const CATEGORIES = [
   "Transport",
   "Transfers",
   "Utilities",
-];
+].sort();
 
 type SortBy = "date" | "description" | "merchant" | "amount" | "category";
 type SortOrder = "asc" | "desc";
