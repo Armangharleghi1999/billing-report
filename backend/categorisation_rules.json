@@ -2,6 +2,74 @@
   "rules": [
     {
       "pattern": "PAYPAL WESTERN",
+      "category": "Shopping"
+    },
+    {
+      "pattern": "YOUR SAVING",
+      "category": "Groceries"
+    },
+    {
+      "pattern": "MUM PIZZA",
+      "category": "Takeaway"
+    },
+    {
+      "pattern": "LIVERPOOL STATION",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "LIVERPOOL STATION",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "PETIT GRAND",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "FOLIE DOUCE",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "PETIT DANOIS",
+      "category": "Dining Out"
+    },
+    {
+      "pattern": "PANORAMIC",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "SUMUP DREAM",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "ARCTIC JUICE",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "BRASSERIE TAV",
+      "category": "Pubs & Bars"
+    },
+    {
+      "pattern": "SUMUP DREAM",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "FOLIE DOUCESHOP",
+      "category": "Personal Care"
+    },
+    {
+      "pattern": "LIVERPOOL STATION",
+      "category": "Coffee & Snacks"
+    },
+    {
+      "pattern": "SFARA",
+      "category": "Travel"
+    },
+    {
+      "pattern": "SPORT HOUSE",
+      "category": "Shopping"
+    },
+    {
+      "pattern": "PAYPAL WESTERN",
       "category": "Entertainment"
     },
     {
@@ -130,7 +198,7 @@
     },
     {
       "pattern": "NANDOS|WAGAMAMA|PIZZA ?EXPRESS|MCDONALD|KFC|BURGER KING|SUBWAY|ZIZZI|FIVE GUYS|DISHOOM|NOVILHO|DINES\\*|DIRTY MARTINI|HONI POKE|ITSU|POPEYES|AL MASAR|MELROSE AND MORGAN|FRONT OF HOUSE|JPMC VE",
-      "category": "Dining Out"
+      "category": "Money From Friends"
     },
     {
       "pattern": "FOUNDERS ARMS|DOGGETTS|WETHERSPOON|FAMOUS THREE|DOUBLE SEVEN|CAFE ROYAL",
@@ -142,7 +210,7 @@
     },
     {
       "pattern": "COUNCIL TAX|\\bWATER\\b|\\bGAS\\b|ELECTRIC|BRITISH GAS|EDF|OCTOPUS|BULB|EON",
-      "category": "Utilities"
+      "category": "Money From Friends"
     },
     {
       "pattern": "RENT|MORTGAGE|LETTING|ESTATE AGENT",
@@ -158,7 +226,7 @@
     },
     {
       "pattern": "BARBER|HAIR|SALON|SPA|BEAUTY|ELEPHANT BARBERS",
-      "category": "Personal Care"
+      "category": "Groceries"
     },
     {
       "pattern": "TRANSFER|MONZO",

@@ -1,10 +1,14 @@
-import json
 import re
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy import func as sa_func
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database import get_session
+from app.models.categorization_rule import CategorizationRule
 from app.schemas.rules import ApplyRulesRequest, RulePreviewItem, RulePreviewResponse
-from app.services.categoriser import RULES_PATH, _load_rules, reload_rules
+from app.services.categoriser import reload_rules
 
 router = APIRouter(prefix="/api/rules", tags=["rules"])
 
@@ -20,9 +24,19 @@ def _suggest_pattern(description: str) -> str:
 
 
 @router.post("/preview", response_model=RulePreviewResponse)
-async def preview_rule_changes(body: dict) -> RulePreviewResponse:
+async def preview_rule_changes(
+    body: dict,
+    session: AsyncSession = Depends(get_session),
+) -> RulePreviewResponse:
     """Given a list of {description, new_category}, return suggested rule patches."""
-    rules, _ = _load_rules()
+    result = await session.execute(
+        select(CategorizationRule)
+        .where(CategorizationRule.enabled == True)
+        .order_by(CategorizationRule.priority.desc(), CategorizationRule.id.asc())
+    )
+    rules = result.scalars().all()
+    compiled = [(r, re.compile(r.pattern, re.IGNORECASE)) for r in rules]
+
     changes = body.get("changes", [])
     items = []
 
@@ -32,14 +46,14 @@ async def preview_rule_changes(body: dict) -> RulePreviewResponse:
         suggested = _suggest_pattern(desc)
 
         text = desc.upper()
-        existing_idx: int | None = None
+        existing_id: int | None = None
         existing_pattern: str | None = None
         existing_cat: str | None = None
-        for i, rule in enumerate(rules):
-            if rule["_compiled"].search(text):
-                existing_idx = i
-                existing_pattern = rule["pattern"]
-                existing_cat = rule["category"]
+        for rule, regex in compiled:
+            if regex.search(text):
+                existing_id = rule.id
+                existing_pattern = rule.pattern
+                existing_cat = rule.category
                 break
 
         items.append(
@@ -47,7 +61,7 @@ async def preview_rule_changes(body: dict) -> RulePreviewResponse:
                 description=desc,
                 new_category=new_cat,
                 suggested_pattern=suggested,
-                existing_rule_index=existing_idx,
+                existing_rule_id=existing_id,
                 existing_rule_pattern=existing_pattern,
                 existing_rule_category=existing_cat,
             )
@@ -57,29 +71,37 @@ async def preview_rule_changes(body: dict) -> RulePreviewResponse:
 
 
 @router.post("/apply")
-async def apply_rule_changes(body: ApplyRulesRequest) -> dict:
-    """Apply rule patches to categorisation_rules.json and reload rules."""
-    with open(RULES_PATH) as f:
-        data = json.load(f)
+async def apply_rule_changes(
+    body: ApplyRulesRequest,
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Apply rule patches: update existing rules or create new ones in the DB."""
+    # Find current max priority for new rules
+    max_prio_result = await session.execute(
+        select(sa_func.max(CategorizationRule.priority))
+    )
+    max_priority = max_prio_result.scalar() or 0
 
-    rules: list[dict] = data["rules"]
-
-    # Update existing rules in-place first (no index shift)
     for patch in body.patches:
-        if patch.existing_rule_index is not None:
-            rules[patch.existing_rule_index]["category"] = patch.category
+        if patch.existing_rule_id is not None:
+            result = await session.execute(
+                select(CategorizationRule).where(
+                    CategorizationRule.id == patch.existing_rule_id
+                )
+            )
+            rule = result.scalar_one_or_none()
+            if rule:
+                rule.category = patch.category
+        else:
+            max_priority += 10
+            new_rule = CategorizationRule(
+                pattern=patch.pattern,
+                category=patch.category,
+                priority=max_priority,
+                enabled=True,
+            )
+            session.add(new_rule)
 
-    # Prepend brand-new rules
-    new_rules = [
-        {"pattern": p.pattern, "category": p.category}
-        for p in body.patches
-        if p.existing_rule_index is None
-    ]
-    rules = new_rules + rules
-
-    data["rules"] = rules
-    with open(RULES_PATH, "w") as f:
-        json.dump(data, f, indent=2)
-
-    reload_rules()
+    await session.commit()
+    await reload_rules(session)
     return {"applied": len(body.patches)}

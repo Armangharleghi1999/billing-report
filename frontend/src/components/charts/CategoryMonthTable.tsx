@@ -13,32 +13,32 @@ import {
 } from "../../api/client";
 
 const CATEGORIES = [
-  "Groceries",
-  "Takeaway",
-  "Subscriptions",
-  "Transport",
-  "Shopping",
-  "Health & Wellness",
-  "To Friends & Family",
-  "Coffee & Snacks",
-  "Income",
-  "Dining Out",
-  "Pubs & Bars",
-  "Telecoms",
-  "Utilities",
-  "Housing",
-  "Rent and Bills",
-  "Entertainment",
   "Books & Education",
-  "Personal Care",
-  "Transfers",
-  "Money From Friends",
-  "Savings",
+  "Coffee & Snacks",
+  "Dining Out",
+  "Entertainment",
+  "Groceries",
+  "Health & Wellness",
+  "Housing",
+  "Income",
   "Investments",
-  "Travel",
-  "Payment",
+  "Money From Friends",
   "Other",
-];
+  "Payment",
+  "Personal Care",
+  "Pubs & Bars",
+  "Rent and Bills",
+  "Savings",
+  "Shopping",
+  "Subscriptions",
+  "Takeaway",
+  "Telecoms",
+  "To Friends & Family",
+  "Transport",
+  "Transfers",
+  "Travel",
+  "Utilities",
+].sort();
 
 interface Props {
   data: MonthlySpend[];
@@ -289,7 +289,7 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
         .map((r) => ({
           pattern: r.pattern,
           category: r.item.new_category,
-          existing_rule_index: r.item.existing_rule_index,
+          existing_rule_id: r.item.existing_rule_id,
         }));
       if (patches.length > 0) {
         await applyRuleChanges(patches);
@@ -729,8 +729,8 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
             </button>
           </div>
           <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>
-            These rules will be saved to <code>categorisation_rules.json</code> so future
-            transactions are auto-categorised. Edit patterns or uncheck to skip.
+            These rules will be saved so future transactions are auto-categorised.
+            Edit patterns or uncheck to skip.
           </p>
 
           <table style={{ ...tableStyle, fontSize: 12, marginBottom: 16 }}>
@@ -806,7 +806,7 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
                     {row.item.new_category}
                   </td>
                   <td style={{ ...tdStyle, textAlign: "left" }}>
-                    {row.item.existing_rule_index !== null ? (
+                    {row.item.existing_rule_id !== null ? (
                       <span
                         style={{
                           fontSize: 10,

@@ -4,6 +4,7 @@
 Run from the project root:
     python backend/migrate_manual_rules.py
 """
+
 import asyncio
 import json
 import re
