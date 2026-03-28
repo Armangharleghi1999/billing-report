@@ -1,5 +1,7 @@
 import pytest
 import pytest_asyncio
+from collections.abc import AsyncGenerator
+
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -9,7 +11,7 @@ from app.models import Base
 
 
 @pytest_asyncio.fixture
-async def db_session():
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create an in-memory SQLite database for testing."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
@@ -27,10 +29,10 @@ async def db_session():
 
 
 @pytest_asyncio.fixture
-async def client(db_session: AsyncSession):
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """HTTP test client with overridden DB session."""
 
-    async def _override():
+    async def _override() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
     app.dependency_overrides[get_session] = _override

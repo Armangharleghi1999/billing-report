@@ -17,10 +17,6 @@
       "category": "Coffee & Snacks"
     },
     {
-      "pattern": "LIVERPOOL STATION",
-      "category": "Coffee & Snacks"
-    },
-    {
       "pattern": "PETIT GRAND",
       "category": "Pubs & Bars"
     },
@@ -49,16 +45,8 @@
       "category": "Pubs & Bars"
     },
     {
-      "pattern": "SUMUP DREAM",
-      "category": "Coffee & Snacks"
-    },
-    {
       "pattern": "FOLIE DOUCESHOP",
       "category": "Personal Care"
-    },
-    {
-      "pattern": "LIVERPOOL STATION",
-      "category": "Coffee & Snacks"
     },
     {
       "pattern": "SFARA",
@@ -69,20 +57,8 @@
       "category": "Shopping"
     },
     {
-      "pattern": "PAYPAL WESTERN",
-      "category": "Entertainment"
-    },
-    {
       "pattern": "PHARMACIE PRINCIPAL",
       "category": "Health & Wellness"
-    },
-    {
-      "pattern": "LIVERPOOL STATION",
-      "category": "Coffee & Snacks"
-    },
-    {
-      "pattern": "SUMUP DREAM",
-      "category": "Coffee & Snacks"
     },
     {
       "pattern": "CANO CAF",
@@ -105,23 +81,11 @@
       "category": "Utilities"
     },
     {
-      "pattern": "YOUR SAVING",
-      "category": "Groceries"
-    },
-    {
-      "pattern": "MUM PIZZA",
-      "category": "Dining Out"
-    },
-    {
       "pattern": "DOUDOUNE CLUB",
       "category": "Pubs & Bars"
     },
     {
       "pattern": "TAVERNE DES",
-      "category": "Dining Out"
-    },
-    {
-      "pattern": "PETIT GRAND",
       "category": "Dining Out"
     },
     {

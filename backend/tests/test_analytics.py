@@ -11,20 +11,20 @@ from app.services.analytics import monthly_spend_by_category, summary_kpis
 
 
 @pytest.mark.asyncio
-async def test_monthly_spend_empty(db_session: AsyncSession):
+async def test_monthly_spend_empty(db_session: AsyncSession) -> None:
     result = await monthly_spend_by_category(db_session)
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_summary_kpis_empty(db_session: AsyncSession):
+async def test_summary_kpis_empty(db_session: AsyncSession) -> None:
     result = await summary_kpis(db_session)
     assert result.total_transactions == 0
     assert result.avg_monthly_spend == Decimal("0")
 
 
 @pytest.mark.asyncio
-async def test_monthly_spend_with_data(db_session: AsyncSession):
+async def test_monthly_spend_with_data(db_session: AsyncSession) -> None:
     stmt = Statement(source="amex", filename="test.pdf", file_hash="abc123")
     db_session.add(stmt)
     await db_session.flush()

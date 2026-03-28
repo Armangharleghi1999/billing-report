@@ -15,7 +15,9 @@ class MerchantNoteItem(BaseModel):
 
 
 @router.get("", response_model=dict[str, str])
-async def get_merchant_notes(session: AsyncSession = Depends(get_session)) -> dict:
+async def get_merchant_notes(
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, str]:
     result = await session.execute(select(MerchantNote))
     return {row.merchant: row.note for row in result.scalars().all()}
 
