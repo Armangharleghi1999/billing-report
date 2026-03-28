@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -5,9 +6,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import engine
+from app.database import async_session, engine
 from app.models import Base
-from app.routers import analytics, auth, ingest, merchant_notes, rules, transactions
+from app.routers import (
+    analytics,
+    auth,
+    budgets,
+    ingest,
+    merchant_notes,
+    rules,
+    transactions,
+)
+from app.services.categoriser import load_rules
+from app.services.rule_migration import migrate_rules_from_json
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -19,6 +32,14 @@ async def lifespan(app: FastAPI):
     # Create tables if they don't exist (dev convenience; use Alembic in prod)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Auto-migrate rules from JSON if DB table is empty
+    async with async_session() as session:
+        result = await migrate_rules_from_json(session)
+        if result["status"] == "migrated":
+            await session.commit()
+            logger.info("Auto-migrated rules from JSON: %s", result)
+        await load_rules(session)
 
     yield
 
@@ -37,6 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(budgets.router)
 app.include_router(ingest.router)
 app.include_router(transactions.router)
 app.include_router(rules.router)

@@ -289,7 +289,7 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
         .map((r) => ({
           pattern: r.pattern,
           category: r.item.new_category,
-          existing_rule_index: r.item.existing_rule_index,
+          existing_rule_id: r.item.existing_rule_id,
         }));
       if (patches.length > 0) {
         await applyRuleChanges(patches);
@@ -729,8 +729,8 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
             </button>
           </div>
           <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>
-            These rules will be saved to <code>categorisation_rules.json</code> so future
-            transactions are auto-categorised. Edit patterns or uncheck to skip.
+            These rules will be saved so future transactions are auto-categorised.
+            Edit patterns or uncheck to skip.
           </p>
 
           <table style={{ ...tableStyle, fontSize: 12, marginBottom: 16 }}>
@@ -806,7 +806,7 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
                     {row.item.new_category}
                   </td>
                   <td style={{ ...tdStyle, textAlign: "left" }}>
-                    {row.item.existing_rule_index !== null ? (
+                    {row.item.existing_rule_id !== null ? (
                       <span
                         style={{
                           fontSize: 10,

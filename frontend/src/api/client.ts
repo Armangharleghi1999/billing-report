@@ -234,7 +234,7 @@ export interface RulePreviewItem {
   description: string;
   new_category: string;
   suggested_pattern: string;
-  existing_rule_index: number | null;
+  existing_rule_id: number | null;
   existing_rule_pattern: string | null;
   existing_rule_category: string | null;
 }
@@ -246,7 +246,7 @@ export interface RulePreviewResponse {
 export interface RulePatch {
   pattern: string;
   category: string;
-  existing_rule_index: number | null;
+  existing_rule_id: number | null;
 }
 
 export async function bulkUpdateTransactions(
@@ -293,4 +293,144 @@ export async function saveMerchantNotes(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(items),
   });
+}
+
+// -- Budgets --
+
+export interface BudgetLineItemIn {
+  description: string;
+  amount: number;
+}
+
+export interface BudgetCategoryIn {
+  category: string;
+  projected_total: number;
+  line_items: BudgetLineItemIn[];
+}
+
+export interface BudgetIncomeItemIn {
+  description: string;
+  amount: number;
+  income_type: string;
+}
+
+export interface BudgetCreate {
+  name: string;
+  currency: string;
+  categories: BudgetCategoryIn[];
+  income_items: BudgetIncomeItemIn[];
+}
+
+export interface BudgetLineItemOut {
+  id: number;
+  description: string;
+  amount: number;
+}
+
+export interface BudgetCategoryOut {
+  id: number;
+  category: string;
+  projected_total: number;
+  line_items: BudgetLineItemOut[];
+}
+
+export interface BudgetIncomeItemOut {
+  id: number;
+  description: string;
+  amount: number;
+  income_type: string;
+}
+
+export interface BudgetOut {
+  id: number;
+  name: string;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  categories: BudgetCategoryOut[];
+  income_items: BudgetIncomeItemOut[];
+}
+
+export interface BudgetSummaryOut {
+  id: number;
+  name: string;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  total_projected: number;
+  total_income: number;
+  category_count: number;
+}
+
+export interface CategoryComparison {
+  category: string;
+  projected: number;
+  actual: number;
+  difference: number;
+  percent_of_projected: number | null;
+}
+
+export interface IncomeComparison {
+  income_type: string;
+  projected: number;
+  actual: number;
+  difference: number;
+}
+
+export interface BudgetComparisonOut {
+  budget_id: number;
+  budget_name: string;
+  month: string;
+  currency: string;
+  categories: CategoryComparison[];
+  income: IncomeComparison[];
+  total_projected_spend: number;
+  total_actual_spend: number;
+  total_projected_income: number;
+  total_actual_income: number;
+  projected_surplus: number;
+  actual_surplus: number;
+}
+
+export async function fetchBudgets(): Promise<BudgetSummaryOut[]> {
+  return request("/budgets");
+}
+
+export async function fetchBudget(id: number): Promise<BudgetOut> {
+  return request(`/budgets/${id}`);
+}
+
+export async function createBudget(data: BudgetCreate): Promise<BudgetOut> {
+  return request("/budgets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateBudget(id: number, data: BudgetCreate): Promise<BudgetOut> {
+  return request(`/budgets/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteBudget(id: number): Promise<void> {
+  await request(`/budgets/${id}`, { method: "DELETE" });
+}
+
+export async function fetchBudgetComparison(
+  budgetId: number,
+  month: string
+): Promise<BudgetComparisonOut> {
+  return request(`/budgets/${budgetId}/compare/${month}`);
+}
+
+export async function fetchAvailableMonths(): Promise<string[]> {
+  return request("/budgets/available-months");
+}
+
+export async function fetchBudgetCategories(): Promise<string[]> {
+  return request("/budgets/categories");
 }

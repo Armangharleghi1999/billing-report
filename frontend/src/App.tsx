@@ -1,4 +1,5 @@
 import { NavLink, Route, Routes } from "react-router-dom";
+import Budgeting from "./pages/Budgeting";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Upload from "./pages/Upload";
@@ -7,6 +8,7 @@ const navItems = [
   { to: "/", label: "Dashboard" },
   { to: "/upload", label: "Upload" },
   { to: "/transactions", label: "Transactions" },
+  { to: "/budgeting", label: "Budgeting" },
 ];
 
 export default function App() {
@@ -62,6 +64,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/budgeting" element={<Budgeting />} />
         </Routes>
       </main>
     </div>

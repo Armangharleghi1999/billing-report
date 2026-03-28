@@ -17,7 +17,7 @@ from app.schemas.transaction import (
     TransactionOut,
     TransactionPreview,
 )
-from app.services.categoriser import categorise
+from app.services.categoriser import categorise, update_match_stats
 from app.services.deduplication import check_duplicates, compute_dedup_hash
 from app.services.pdf_parser.amex import AmexParser
 from app.services.pdf_parser.chase import ChaseParser
@@ -95,8 +95,11 @@ async def ingest_statement(
     dedup_result = await check_duplicates(session, parsed_txns)
 
     # Insert new (non-duplicate) transactions
+    matched_rule_ids: list[int] = []
     for txn in dedup_result.new:
-        category = categorise(txn.description)
+        category, rule_id = categorise(txn.description)
+        if rule_id is not None:
+            matched_rule_ids.append(rule_id)
         db_txn = Transaction(
             statement_id=stmt.id,
             date=txn.date,
@@ -110,6 +113,7 @@ async def ingest_statement(
         )
         session.add(db_txn)
 
+    await update_match_stats(session, matched_rule_ids)
     await session.commit()
 
     # Build response
@@ -120,7 +124,7 @@ async def ingest_statement(
             merchant=t.merchant,
             amount=t.amount,
             is_credit=t.is_credit,
-            category=categorise(t.description),
+            category=categorise(t.description)[0],
             dedup_hash=compute_dedup_hash(t.date, t.description, t.amount),
         )
         for t in dedup_result.new
@@ -135,7 +139,7 @@ async def ingest_statement(
                 merchant=incoming.merchant,
                 amount=incoming.amount,
                 is_credit=incoming.is_credit,
-                category=categorise(incoming.description),
+                category=categorise(incoming.description)[0],
                 dedup_hash=compute_dedup_hash(
                     incoming.date, incoming.description, incoming.amount
                 ),
