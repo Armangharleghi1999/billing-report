@@ -22,6 +22,7 @@ dev = [
     "httpx",
     "ruff",
     "pyright",
+    "black",
 ]
 
 [build-system]
@@ -37,3 +38,7 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
