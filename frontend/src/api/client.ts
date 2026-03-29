@@ -218,6 +218,23 @@ export interface SpendingFlow {
   unspent: number;
 }
 
+export interface CategoryDrilldownItem {
+  month: string;
+  description: string;
+  total: number;
+}
+
+export async function fetchCategoryDrilldown(
+  category: string,
+  startDate?: string,
+  endDate?: string
+): Promise<CategoryDrilldownItem[]> {
+  const qs = new URLSearchParams({ category });
+  if (startDate) qs.set("start_date", startDate);
+  if (endDate) qs.set("end_date", endDate);
+  return request(`/analytics/category-drilldown?${qs}`);
+}
+
 export async function fetchSpendingFlow(
   startDate?: string,
   endDate?: string
@@ -228,7 +245,125 @@ export async function fetchSpendingFlow(
   return request(`/analytics/spending-flow?${qs}`);
 }
 
-// -- Rules --
+// -- Rules (full CRUD) --
+
+export interface RuleOut {
+  id: number;
+  pattern: string;
+  category: string;
+  priority: number;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  last_matched_at: string | null;
+  match_count: number;
+}
+
+export interface PaginatedRules {
+  items: RuleOut[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+}
+
+export interface RuleStatsOut {
+  total_enabled: number;
+  categories_covered: number;
+  unused_count: number;
+  last_updated: string | null;
+}
+
+export interface TestPatternResult {
+  matches: string[];
+  count: number;
+}
+
+export async function fetchRules(params: {
+  page?: number;
+  page_size?: number;
+  category?: string;
+  enabled?: boolean;
+  search?: string;
+  unused_only?: boolean;
+  sort_by?: string;
+  sort_order?: string;
+}): Promise<PaginatedRules> {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== "") qs.set(k, String(v));
+  });
+  return request(`/rules?${qs}`);
+}
+
+export async function fetchRuleStats(): Promise<RuleStatsOut> {
+  return request("/rules/stats");
+}
+
+export async function createRule(data: {
+  pattern: string;
+  category: string;
+  priority?: number;
+  enabled?: boolean;
+}): Promise<RuleOut> {
+  return request("/rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRule(
+  id: number,
+  data: { pattern?: string; category?: string; priority?: number; enabled?: boolean }
+): Promise<RuleOut> {
+  return request(`/rules/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRule(id: number): Promise<void> {
+  await request(`/rules/${id}`, { method: "DELETE" });
+}
+
+export async function bulkDeleteRules(ids: number[]): Promise<{ deleted: number }> {
+  return request("/rules/bulk-delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+}
+
+export async function bulkToggleRules(
+  ids: number[],
+  enabled: boolean
+): Promise<{ updated: number }> {
+  return request("/rules/bulk-toggle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids, enabled }),
+  });
+}
+
+export async function testPattern(pattern: string): Promise<TestPatternResult> {
+  return request("/rules/test-pattern", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pattern }),
+  });
+}
+
+export async function rescanRules(): Promise<{
+  updated: number;
+  rules_matched: number;
+  rules_unused: number;
+}> {
+  return request("/rules/rescan", { method: "POST" });
+}
+
+// -- Rules (legacy preview/apply) --
 
 export interface RulePreviewItem {
   description: string;
@@ -277,6 +412,32 @@ export async function applyRuleChanges(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ patches }),
   });
+}
+
+// -- Categories --
+
+export async function fetchCategories(): Promise<string[]> {
+  return request("/categories");
+}
+
+export async function createCategory(name: string): Promise<string> {
+  return request("/categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function renameCategory(name: string, newName: string): Promise<string> {
+  return request(`/categories/${encodeURIComponent(name)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ new_name: newName }),
+  });
+}
+
+export async function deleteCategory(name: string): Promise<void> {
+  await request(`/categories/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
 
 // -- Merchant Notes --

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.analytics import (
+    CategoryDrilldownItem,
     IncomeVsExpenses,
     MerchantBreakdownItem,
     MonthlySpendByCategory,
@@ -10,6 +11,7 @@ from app.schemas.analytics import (
     SummaryKPIs,
 )
 from app.services.analytics import (
+    category_drilldown,
     income_vs_expenses,
     merchant_breakdown,
     monthly_spend_by_category,
@@ -53,6 +55,16 @@ async def get_spending_flow(
     session: AsyncSession = Depends(get_session),
 ) -> SpendingFlow:
     return await spending_flow(session, start_date, end_date)
+
+
+@router.get("/category-drilldown", response_model=list[CategoryDrilldownItem])
+async def get_category_drilldown(
+    category: str = Query(...),
+    start_date: str | None = Query(None, description="YYYY-MM-DD"),
+    end_date: str | None = Query(None, description="YYYY-MM-DD"),
+    session: AsyncSession = Depends(get_session),
+) -> list[CategoryDrilldownItem]:
+    return await category_drilldown(session, category, start_date, end_date)
 
 
 @router.get("/summary", response_model=SummaryKPIs)

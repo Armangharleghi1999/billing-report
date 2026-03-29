@@ -11,34 +11,7 @@ import {
   type RulePatch,
   type TransactionOut,
 } from "../../api/client";
-
-const CATEGORIES = [
-  "Books & Education",
-  "Coffee & Snacks",
-  "Dining Out",
-  "Entertainment",
-  "Groceries",
-  "Health & Wellness",
-  "Housing",
-  "Income",
-  "Investments",
-  "Money From Friends",
-  "Other",
-  "Payment",
-  "Personal Care",
-  "Pubs & Bars",
-  "Rent and Bills",
-  "Savings",
-  "Shopping",
-  "Subscriptions",
-  "Takeaway",
-  "Telecoms",
-  "To Friends & Family",
-  "Transport",
-  "Transfers",
-  "Travel",
-  "Utilities",
-].sort();
+import { useCategories } from "../../hooks/useCategories";
 
 interface Props {
   data: MonthlySpend[];
@@ -88,6 +61,9 @@ function monthDateRange(month: string): { start: string; end: string } {
 }
 
 export default function CategoryMonthTable({ data, onDataChanged }: Props) {
+  const { data: allCategoriesData } = useCategories();
+  const allCategories = allCategoriesData ?? [];
+
   const [drill, setDrill] = useState<DrillKey | null>(null);
   const [drillData, setDrillData] = useState<TransactionOut[]>([]);
   const [drillLoading, setDrillLoading] = useState(false);
@@ -543,7 +519,7 @@ export default function CategoryMonthTable({ data, onDataChanged }: Props) {
                             fontWeight: isPending ? 600 : 400,
                           }}
                         >
-                          {CATEGORIES.map((c) => (
+                          {allCategories.map((c) => (
                             <option key={c} value={c}>
                               {c}
                             </option>

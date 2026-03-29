@@ -171,19 +171,22 @@ async def update_budget(
             projected_total=cat.projected_total,
             budget=budget,
         )
+        session.add(category_obj)
         for li in cat.line_items:
-            BudgetLineItem(
+            li_obj = BudgetLineItem(
                 description=li.description,
                 amount=li.amount,
                 budget_category=category_obj,
             )
+            session.add(li_obj)
     for inc in data.income_items:
-        BudgetIncomeItem(
+        inc_obj = BudgetIncomeItem(
             description=inc.description,
             amount=inc.amount,
             income_type=inc.income_type,
             budget=budget,
         )
+        session.add(inc_obj)
 
     budget.updated_at = datetime.now()
     await session.commit()
@@ -363,7 +366,7 @@ def _budget_to_out(b: Budget) -> BudgetOut:
                 projected_total=c.projected_total,
                 line_items=[
                     BudgetLineItemOut(
-                        id=li.id, description=li.description, amount=li.amount
+                        id=li.id, description=li.description, amount=int(li.amount)
                     )
                     for li in c.line_items
                 ],

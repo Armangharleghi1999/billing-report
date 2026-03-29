@@ -78,9 +78,10 @@ async def recategorise_all(session: AsyncSession) -> int:
     """
     await reload_rules(session)
 
-    result = await session.execute(
-        select(Transaction).where(Transaction.category_source == "rule")
-    )
+    # Scan all transactions for match counting so manually-tagged transactions
+    # contribute to match_count. Category updates are restricted to rule-sourced rows
+    # to preserve manual overrides.
+    result = await session.execute(select(Transaction))
     transactions = result.scalars().all()
 
     count = 0
@@ -89,7 +90,7 @@ async def recategorise_all(session: AsyncSession) -> int:
         new_cat, rule_id = categorise(txn.description)
         if rule_id is not None:
             matched_rule_ids.append(rule_id)
-        if new_cat != txn.category:
+        if txn.category_source == "rule" and new_cat != txn.category:
             txn.category = new_cat
             count += 1
 

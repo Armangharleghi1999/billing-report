@@ -6,13 +6,17 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from sqlalchemy import func as sa_func, select, text
+
 from app.config import settings
 from app.database import async_session, engine
 from app.models import Base
+from app.models.category_name import CategoryName
 from app.routers import (
     analytics,
     auth,
     budgets,
+    categories,
     ingest,
     merchant_notes,
     rules,
@@ -42,6 +46,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             logger.info("Auto-migrated rules from JSON: %s", result)
         await load_rules(session)
 
+    # Seed category_names table from existing rules + transactions if empty
+    async with async_session() as session:
+        count_result = await session.execute(
+            select(sa_func.count()).select_from(CategoryName)
+        )
+        if count_result.scalar() == 0:
+            cats_result = await session.execute(
+                text(
+                    "SELECT DISTINCT category FROM categorization_rules"
+                    " UNION SELECT DISTINCT category FROM transactions"
+                    " ORDER BY category"
+                )
+            )
+            for (name,) in cats_result.all():
+                if name:
+                    session.add(CategoryName(name=name))
+            await session.commit()
+            logger.info("Seeded category_names table")
+
     yield
 
 
@@ -60,6 +83,7 @@ app.add_middleware(
 )
 
 app.include_router(budgets.router)
+app.include_router(categories.router)
 app.include_router(ingest.router)
 app.include_router(transactions.router)
 app.include_router(rules.router)

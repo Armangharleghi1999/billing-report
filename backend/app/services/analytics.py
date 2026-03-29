@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.statement import Statement
 from app.models.transaction import Transaction
 from app.schemas.analytics import (
+    CategoryDrilldownItem,
     IncomeVsExpenses,
     MerchantBreakdownItem,
     MonthlySpendByCategory,
@@ -255,6 +256,45 @@ async def spending_flow(
 
     unspent = total_income - total_expenses
     return SpendingFlow(income=total_income, categories=categories, unspent=unspent)
+
+
+async def category_drilldown(
+    session: AsyncSession,
+    category: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[CategoryDrilldownItem]:
+    """Per-description per-month totals for a given category (all transaction directions)."""
+    year_col = extract("year", Transaction.date)
+    month_col = extract("month", Transaction.date)
+    month_label = func.printf("%04d-%02d", year_col, month_col)
+
+    query = (
+        select(
+            month_label.label("month"),
+            Transaction.description.label("description"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .where(Transaction.category == category)
+        .where(Transaction.description.is_not(None))
+        .group_by(month_label, Transaction.description)
+        .order_by(month_label, Transaction.description)
+    )
+
+    if start_date:
+        query = query.where(Transaction.date >= start_date)
+    if end_date:
+        query = query.where(Transaction.date <= end_date)
+
+    result = await session.execute(query)
+    return [
+        CategoryDrilldownItem(
+            month=row.month,
+            description=row.description,
+            total=Decimal(str(row.total)),
+        )
+        for row in result.all()
+    ]
 
 
 async def summary_kpis(session: AsyncSession) -> SummaryKPIs:
