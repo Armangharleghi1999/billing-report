@@ -305,9 +305,12 @@ export default function Dashboard() {
         </CollapsibleCard>
       </div>
 
-      {/* Row 2: Spending by Category Pie Chart */}
+      {/* Row 2: Spending by Category Pie Chart + Drill-down */}
       <CollapsibleCard title="Spending by Category" style={{ marginBottom: 24 }}>
-        <CategoryPieChart />
+        <CategoryPieChart
+          startDate={startDate || undefined}
+          endDate={endDate || undefined}
+        />
       </CollapsibleCard>
 
       {/* Row 3: Unspent Money (full width) */}

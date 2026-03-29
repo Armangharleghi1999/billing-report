@@ -8,28 +8,7 @@ import {
   type TransactionOut,
 } from "../api/client";
 import { useFetch } from "../hooks/useFetch";
-
-const CATEGORIES = [
-  "Books & Education",
-  "Coffee & Snacks",
-  "Dining Out",
-  "Entertainment",
-  "Groceries",
-  "Health & Wellness",
-  "Housing",
-  "Income",
-  "Money From Friends",
-  "Other",
-  "Personal Care",
-  "Shopping",
-  "Subscriptions",
-  "Takeaway",
-  "Telecoms",
-  "To Friends & Family",
-  "Transport",
-  "Transfers",
-  "Utilities",
-].sort();
+import { useCategories } from "../hooks/useCategories";
 
 type SortBy = "date" | "description" | "merchant" | "amount" | "category";
 type SortOrder = "asc" | "desc";
@@ -61,6 +40,9 @@ export default function Transactions() {
   const [showConflictPanel, setShowConflictPanel] = useState(false);
   const [conflictResolutions, setConflictResolutions] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+
+  const { data: categoriesData } = useCategories();
+  const categories = categoriesData ?? [];
 
   const { data, loading, refetch } = useFetch(
     () =>
@@ -231,7 +213,7 @@ export default function Transactions() {
           style={inputStyle}
         >
           <option value="">All Categories</option>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -533,7 +515,7 @@ export default function Transactions() {
                             fontWeight: isCatPending ? 600 : 400,
                           }}
                         >
-                          {CATEGORIES.map((c) => (
+                          {categories.map((c) => (
                             <option key={c} value={c}>
                               {c}
                             </option>

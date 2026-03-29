@@ -47,3 +47,9 @@ class SummaryKPIs(BaseModel):
     savings_rate: Decimal  # percentage
     top_category: str | None
     total_transactions: int
+
+
+class CategoryDrilldownItem(BaseModel):
+    month: str
+    description: str
+    total: Decimal

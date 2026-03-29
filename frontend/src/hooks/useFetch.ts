@@ -15,7 +15,14 @@ export function useFetch<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
   }, deps);
 
   useEffect(() => {
-    refetch();
+    let active = true;
+    setLoading(true);
+    setError(null);
+    fetcher()
+      .then((d) => { if (active) setData(d); })
+      .catch((e) => { if (active) setError(e.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [refetch]);
 
   return { data, loading, error, refetch };
