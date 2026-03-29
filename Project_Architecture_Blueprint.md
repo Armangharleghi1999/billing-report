@@ -272,10 +272,3 @@ npm run dev
 - Project config: [backend/pyproject.toml](backend/pyproject.toml), [frontend/package.json](frontend/package.json)
 
 ---
-
-If you want, I can:
-- run the test suite now (backend) and report failures,
-- add CI workflow (GitHub Actions) to run linters/tests,
-- or create ADRs for major architectural decisions.
-
-If you want any section expanded (diagrams at different C4 levels, ADRs, or ready-to-run templates), tell me which and I will continue.
