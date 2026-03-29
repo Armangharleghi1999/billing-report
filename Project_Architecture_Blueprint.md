@@ -31,23 +31,23 @@ This document analyzes the codebase to capture the architecture, boundaries, imp
 High-level flow (Mermaid):
 
 ```mermaid
-flowchart LR
+graph LR
   subgraph Frontend
-    FE[React SPA (frontend/src)]
+    FE["React SPA (frontend/src)"]
   end
   subgraph Backend
-    API[FastAPI app (backend/app/main.py)]
-    Routers[API Routers (backend/app/routers/*)]
-    Services[Services (backend/app/services/*)]
-    Models[Domain Models (backend/app/models/*)]
-    DB[SQLite / SQLAlchemy / Alembic (data/ + backend/alembic)]
+    API["FastAPI app (backend/app/main.py)"]
+    Routers["API Routers (backend/app/routers/*)"]
+    Services["Services (backend/app/services/*)"]
+    Models["Domain Models (backend/app/models/*)"]
+    DB["SQLite / SQLAlchemy / Alembic (data/ + backend/alembic)"]
   end
-  FE -->|HTTP JSON (/api)| API
+  FE -->|"HTTP JSON (/api)"| API
   API --> Routers
   Routers --> Services
   Services --> Models
   Models --> DB
-  Services -->|parsing| Parser[PDF Parsers (backend/app/services/pdf_parser/*)]
+  Services -->|"parsing"| Parser["PDF Parsers (backend/app/services/pdf_parser/*)"]
   Parser --> DB
 ```
 
@@ -56,10 +56,10 @@ Sequence for statement ingestion (Mermaid):
 ```mermaid
 sequenceDiagram
   participant User
-  participant FE as React Upload
-  participant API as /api/ingest
-  participant Parser as PDF Parser
-  participant DB as Database
+  participant FE
+  participant API
+  participant Parser
+  participant DB
   User->>FE: Upload PDF
   FE->>API: POST /api/ingest/statement
   API->>Parser: parse file -> transactions
