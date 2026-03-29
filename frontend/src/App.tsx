@@ -1,7 +1,10 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { fetchSummary } from "./api/client";
 import Budgeting from "./pages/Budgeting";
 import Dashboard from "./pages/Dashboard";
 import Rules from "./pages/Rules";
+import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 import Upload from "./pages/Upload";
 
@@ -11,9 +14,20 @@ const navItems = [
   { to: "/transactions", label: "Transactions" },
   { to: "/budgeting", label: "Budgeting" },
   { to: "/rules", label: "Rules & Categories" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/upload") return;
+    fetchSummary().then((summary) => {
+      if (summary.total_transactions === 0) navigate("/upload");
+    }).catch(() => {});
+  }, []);
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar */}
@@ -68,6 +82,7 @@ export default function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/budgeting" element={<Budgeting />} />
           <Route path="/rules" element={<Rules />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </div>

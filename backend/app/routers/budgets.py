@@ -21,6 +21,7 @@ from app.schemas.budget import (
     BudgetCreate,
     BudgetOut,
     BudgetSummaryOut,
+    BudgetTemplateOut,
     BudgetUpdate,
     CategoryComparison,
     IncomeComparison,
@@ -120,6 +121,15 @@ async def create_budget(
     )
     fetched = result.scalar_one()
     return _budget_to_out(fetched)
+
+
+@router.get("/template", response_model=BudgetTemplateOut)
+async def get_budget_template(
+    session: AsyncSession = Depends(get_session),
+) -> BudgetTemplateOut:
+    from app.services.budget_template import generate_budget_template
+
+    return await generate_budget_template(session)
 
 
 @router.get("/{budget_id}", response_model=BudgetOut)

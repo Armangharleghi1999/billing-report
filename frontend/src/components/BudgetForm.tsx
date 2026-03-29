@@ -8,19 +8,19 @@ import {
 
 const CURRENCY_SYMBOLS: Record<string, string> = { GBP: "£", USD: "$", EUR: "€" };
 
-interface LineItemFormRow {
+export interface LineItemFormRow {
   description: string;
   amount: string;
 }
 
-interface CategoryFormRow {
+export interface CategoryFormRow {
   category: string;
   useLineItems: boolean;
   projectedTotal: string;
   lineItems: LineItemFormRow[];
 }
 
-interface IncomeFormRow {
+export interface IncomeFormRow {
   description: string;
   amount: string;
   incomeType: string;
@@ -30,6 +30,7 @@ interface BudgetFormProps {
   budgetId: number | null;
   onSave: () => void;
   onCancel: () => void;
+  initialData?: { categories: CategoryFormRow[]; incomeItems: IncomeFormRow[] } | null;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -62,7 +63,7 @@ const dashedButtonStyle: React.CSSProperties = {
   fontSize: 13,
 };
 
-export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormProps) {
+export default function BudgetForm({ budgetId, onSave, onCancel, initialData }: BudgetFormProps) {
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("GBP");
   const [categories, setCategories] = useState<CategoryFormRow[]>([]);
@@ -98,6 +99,9 @@ export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormPro
             incomeType: i.income_type,
           }))
         );
+      } else if (initialData) {
+        setCategories(initialData.categories);
+        setIncomeItems(initialData.incomeItems);
       }
       setLoading(false);
     }
@@ -221,7 +225,7 @@ export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormPro
   }
 
   return (
-    <div style={{ maxWidth: 720 }}>
+    <div>
       <button
         onClick={onCancel}
         style={{
@@ -273,6 +277,7 @@ export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormPro
 
       <div style={sectionHeaderStyle}>Spending Categories</div>
 
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
       {categories.map((cat, catIndex) => {
         const catTotal = getCategoryTotal(cat);
         const pct = totalSpend > 0 ? ((catTotal / totalSpend) * 100).toFixed(1) : "0.0";
@@ -284,11 +289,11 @@ export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormPro
           <div
             key={catIndex}
             style={{
+              flex: "1 1 300px",
               background: "var(--bg)",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius)",
               padding: 16,
-              marginBottom: 12,
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -398,6 +403,7 @@ export default function BudgetForm({ budgetId, onSave, onCancel }: BudgetFormPro
           </div>
         );
       })}
+      </div>
 
       <button onClick={addCategory} style={dashedButtonStyle}>
         + Add Category

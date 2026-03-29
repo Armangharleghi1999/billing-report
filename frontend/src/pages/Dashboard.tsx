@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getGraphVisibility } from "../hooks/useGraphSettings";
 import {
   clearAllData,
   recategoriseTransactions,
@@ -93,6 +94,8 @@ function computeDefaultDateRange(
 }
 
 export default function Dashboard() {
+  const graphs = getGraphVisibility();
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [defaultsApplied, setDefaultsApplied] = useState(false);
@@ -129,7 +132,7 @@ export default function Dashboard() {
     [startDate, endDate]
   );
   const { data: categoryTableData, refetch: refetchCategoryTable } = useFetch(
-    () => fetchMonthlySpend(categoryTableStart, undefined),
+    () => fetchMonthlySpend(categoryTableStart, undefined, true),
     [categoryTableStart]
   );
   const { data: spendingFlow } = useFetch(
@@ -296,49 +299,65 @@ export default function Dashboard() {
       </div>
 
       {/* Row 1: Monthly Spend + Income vs Expenses */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
-        <CollapsibleCard title="Monthly Spend by Category">
-          <MonthlySpendByCategory data={monthlySpend ?? []} />
-        </CollapsibleCard>
-        <CollapsibleCard title="Income vs Expenses">
-          <IncomeVsExpensesChart data={incomeVsExp ?? []} />
-        </CollapsibleCard>
-      </div>
+      {(graphs.monthly_spend || graphs.income_vs_expenses) && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+          {graphs.monthly_spend && (
+            <CollapsibleCard title="Monthly Spend by Category">
+              <MonthlySpendByCategory data={monthlySpend ?? []} />
+            </CollapsibleCard>
+          )}
+          {graphs.income_vs_expenses && (
+            <CollapsibleCard title="Income vs Expenses">
+              <IncomeVsExpensesChart data={incomeVsExp ?? []} />
+            </CollapsibleCard>
+          )}
+        </div>
+      )}
 
       {/* Row 2: Spending by Category Pie Chart + Drill-down */}
-      <CollapsibleCard title="Spending by Category" style={{ marginBottom: 24 }}>
-        <CategoryPieChart
-          startDate={startDate || undefined}
-          endDate={endDate || undefined}
-        />
-      </CollapsibleCard>
+      {graphs.spending_by_category && (
+        <CollapsibleCard title="Spending by Category" style={{ marginBottom: 24 }}>
+          <CategoryPieChart
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+          />
+        </CollapsibleCard>
+      )}
 
       {/* Row 3: Unspent Money (full width) */}
-      <CollapsibleCard title="Unspent Money per Month" style={{ marginBottom: 24 }}>
-        <UnspentMoney data={incomeVsExp ?? []} />
-      </CollapsibleCard>
+      {graphs.unspent_money && (
+        <CollapsibleCard title="Unspent Money per Month" style={{ marginBottom: 24 }}>
+          <UnspentMoney data={incomeVsExp ?? []} />
+        </CollapsibleCard>
+      )}
 
       {/* Row 4: Top Merchants (collapsed by default) */}
-      <CollapsibleCard title="Top Merchants" defaultOpen={false} style={{ marginBottom: 24 }}>
-        <MerchantBreakdownChart data={merchants ?? []} />
-      </CollapsibleCard>
+      {graphs.top_merchants && (
+        <CollapsibleCard title="Top Merchants" defaultOpen={false} style={{ marginBottom: 24 }}>
+          <MerchantBreakdownChart data={merchants ?? []} />
+        </CollapsibleCard>
+      )}
 
       {/* Row 5: Spending Flow (Sankey) */}
-      <CollapsibleCard title="Spending Flow" defaultOpen={false} style={{ marginBottom: 24 }}>
-        {spendingFlow ? (
-          <SpendingFlowChart data={spendingFlow} />
-        ) : (
-          <p style={{ color: "var(--text-muted)" }}>Loading...</p>
-        )}
-      </CollapsibleCard>
+      {graphs.spending_flow && (
+        <CollapsibleCard title="Spending Flow" defaultOpen={false} style={{ marginBottom: 24 }}>
+          {spendingFlow ? (
+            <SpendingFlowChart data={spendingFlow} />
+          ) : (
+            <p style={{ color: "var(--text-muted)" }}>Loading...</p>
+          )}
+        </CollapsibleCard>
+      )}
 
       {/* Row 6: Category x Month Table */}
-      <CollapsibleCard title="Spending by Category — Last 3 Months" defaultOpen={false}>
-        <CategoryMonthTable
-          data={categoryTableData ?? []}
-          onDataChanged={refetchCategoryTable}
-        />
-      </CollapsibleCard>
+      {graphs.category_month_table && (
+        <CollapsibleCard title="Breakdown by Category — Last 3 Months" defaultOpen={false}>
+          <CategoryMonthTable
+            data={categoryTableData ?? []}
+            onDataChanged={refetchCategoryTable}
+          />
+        </CollapsibleCard>
+      )}
     </div>
   );
 }

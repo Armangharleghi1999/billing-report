@@ -211,15 +211,49 @@ export default function CategoryDrilldown({ category, startDate, endDate }: Prop
           style={{
             flexShrink: 0,
             marginTop: 10,
-            maxHeight: 120,
-            overflowY: "auto",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "5px 14px",
-            paddingTop: 8,
             borderTop: "1px solid var(--border)",
+            paddingTop: 8,
           }}
         >
+          <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+            <button
+              onClick={() => setHiddenLines(new Set())}
+              style={{
+                padding: "2px 10px",
+                fontSize: 11,
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+              }}
+            >
+              Tick All
+            </button>
+            <button
+              onClick={() => setHiddenLines(new Set(descriptions))}
+              style={{
+                padding: "2px 10px",
+                fontSize: 11,
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+              }}
+            >
+              Untick All
+            </button>
+          </div>
+          <div
+            style={{
+              maxHeight: 120,
+              overflowY: "auto",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "5px 14px",
+            }}
+          >
           {descriptions.map((desc, i) => {
             const hidden = hiddenLines.has(desc);
             return (
@@ -264,6 +298,7 @@ export default function CategoryDrilldown({ category, startDate, endDate }: Prop
               </label>
             );
           })}
+          </div>
         </div>
       )}
     </div>

@@ -121,3 +121,22 @@ class BudgetComparisonOut(BaseModel):
     total_actual_income: Decimal
     projected_surplus: Decimal
     actual_surplus: Decimal
+
+
+# -- Budget template schemas --
+
+
+class BudgetTemplateLineItem(BaseModel):
+    merchant: str
+    median_amount: Decimal
+
+
+class BudgetTemplateCategory(BaseModel):
+    category: str
+    projected_total: Decimal
+    line_items: list[BudgetTemplateLineItem]
+
+
+class BudgetTemplateOut(BaseModel):
+    months_analyzed: int
+    categories: list[BudgetTemplateCategory]

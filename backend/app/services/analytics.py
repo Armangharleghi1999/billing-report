@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import extract, func, select
+from sqlalchemy import extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.statement import Statement
@@ -28,11 +28,26 @@ async def monthly_spend_by_category(
     session: AsyncSession,
     start_date: str | None = None,
     end_date: str | None = None,
+    include_money_from_friends: bool = False,
 ) -> list[MonthlySpendByCategory]:
     """Group transactions by (year-month, category), excluding income/savings/credits."""
     year_col = extract("year", Transaction.date)
     month_col = extract("month", Transaction.date)
     month_label = func.printf("%04d-%02d", year_col, month_col)
+
+    if include_money_from_friends:
+        category_filter = or_(
+            (Transaction.is_credit == False)
+            & Transaction.category.not_in(_NON_SPEND_CATS),  # noqa: E712
+            (Transaction.is_credit == True)
+            & (Transaction.category == "Money From Friends"),  # noqa: E712
+        )
+    else:
+        category_filter = (
+            Transaction.is_credit == False
+        ) & Transaction.category.not_in(
+            _NON_SPEND_CATS
+        )  # noqa: E712
 
     query = (
         select(
@@ -40,8 +55,7 @@ async def monthly_spend_by_category(
             Transaction.category.label("category"),
             func.sum(Transaction.amount).label("total"),
         )
-        .where(Transaction.is_credit == False)  # noqa: E712
-        .where(Transaction.category.not_in(_NON_SPEND_CATS))
+        .where(category_filter)
         .where(Transaction.category.is_not(None))
         .group_by(month_label, Transaction.category)
         .order_by(month_label)

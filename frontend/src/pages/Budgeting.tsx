@@ -2,10 +2,12 @@ import { useState } from "react";
 import {
   deleteBudget,
   fetchBudgets,
+  fetchBudgetTemplate,
   type BudgetSummaryOut,
 } from "../api/client";
 import BudgetComparison from "../components/BudgetComparison";
-import BudgetForm from "../components/BudgetForm";
+import BudgetCreateChoice from "../components/BudgetCreateChoice";
+import BudgetForm, { type CategoryFormRow, type IncomeFormRow } from "../components/BudgetForm";
 import { useFetch } from "../hooks/useFetch";
 
 const CURRENCY_SYMBOLS: Record<string, string> = { GBP: "£", USD: "$", EUR: "€" };
@@ -19,16 +21,61 @@ function formatDate(iso: string): string {
 }
 
 export default function Budgeting() {
-  const [view, setView] = useState<"list" | "form" | "compare">("list");
+  const [view, setView] = useState<"list" | "choice" | "form" | "compare">("list");
   const [editingBudgetId, setEditingBudgetId] = useState<number | null>(null);
   const [comparingBudgetId, setComparingBudgetId] = useState<number | null>(null);
+  const [templateData, setTemplateData] = useState<{
+    categories: CategoryFormRow[];
+    incomeItems: IncomeFormRow[];
+  } | null>(null);
 
   const { data: budgets, loading, error, refetch } = useFetch(fetchBudgets);
+
+  if (view === "choice") {
+    return (
+      <BudgetCreateChoice
+        onChooseBlank={() => {
+          setTemplateData(null);
+          setView("form");
+        }}
+        onChooseTemplate={async () => {
+          try {
+            const tmpl = await fetchBudgetTemplate();
+            if (tmpl.months_analyzed === 0 || tmpl.categories.length === 0) {
+              alert("Not enough transaction history to auto-generate a budget. Opening blank form.");
+              setTemplateData(null);
+              setView("form");
+              return;
+            }
+            setTemplateData({
+              categories: tmpl.categories.map((cat) => ({
+                category: cat.category,
+                useLineItems: true,
+                projectedTotal: "",
+                lineItems: cat.line_items.map((li) => ({
+                  description: li.merchant,
+                  amount: li.median_amount,
+                })),
+              })),
+              incomeItems: [],
+            });
+            setView("form");
+          } catch {
+            alert("Failed to fetch budget template. Opening blank form.");
+            setTemplateData(null);
+            setView("form");
+          }
+        }}
+        onCancel={() => setView("list")}
+      />
+    );
+  }
 
   if (view === "form") {
     return (
       <BudgetForm
         budgetId={editingBudgetId}
+        initialData={templateData}
         onSave={() => {
           setView("list");
           refetch();
@@ -62,7 +109,7 @@ export default function Budgeting() {
           <button
             onClick={() => {
               setEditingBudgetId(null);
-              setView("form");
+              setView("choice");
             }}
             style={{
               padding: "8px 18px",
@@ -99,7 +146,7 @@ export default function Budgeting() {
           <button
             onClick={() => {
               setEditingBudgetId(null);
-              setView("form");
+              setView("choice");
             }}
             style={{
               padding: "12px 24px",

@@ -173,11 +173,13 @@ export interface SummaryKPIs {
 
 export async function fetchMonthlySpend(
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  includeFriends?: boolean
 ): Promise<MonthlySpend[]> {
   const qs = new URLSearchParams();
   if (startDate) qs.set("start_date", startDate);
   if (endDate) qs.set("end_date", endDate);
+  if (includeFriends) qs.set("include_money_from_friends", "true");
   return request(`/analytics/monthly-spend-by-category?${qs}`);
 }
 
@@ -594,4 +596,24 @@ export async function fetchAvailableMonths(): Promise<string[]> {
 
 export async function fetchBudgetCategories(): Promise<string[]> {
   return request("/budgets/categories");
+}
+
+export interface BudgetTemplateLineItem {
+  merchant: string;
+  median_amount: string;
+}
+
+export interface BudgetTemplateCategory {
+  category: string;
+  projected_total: string;
+  line_items: BudgetTemplateLineItem[];
+}
+
+export interface BudgetTemplateOut {
+  months_analyzed: number;
+  categories: BudgetTemplateCategory[];
+}
+
+export async function fetchBudgetTemplate(): Promise<BudgetTemplateOut> {
+  return request("/budgets/template");
 }

@@ -26,9 +26,12 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 async def get_monthly_spend_by_category(
     start_date: str | None = Query(None, description="YYYY-MM-DD"),
     end_date: str | None = Query(None, description="YYYY-MM-DD"),
+    include_money_from_friends: bool = Query(False),
     session: AsyncSession = Depends(get_session),
 ) -> list[MonthlySpendByCategory]:
-    return await monthly_spend_by_category(session, start_date, end_date)
+    return await monthly_spend_by_category(
+        session, start_date, end_date, include_money_from_friends
+    )
 
 
 @router.get("/income-vs-expenses", response_model=list[IncomeVsExpenses])
