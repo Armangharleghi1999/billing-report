@@ -48,25 +48,32 @@ The dashboard opens at `http://localhost:5173`. API calls are proxied to the bac
 3. The app parses transactions, categorises them, and checks for duplicates.
 4. View spending breakdowns on the **Dashboard** page (charts for monthly spend by category, income vs expenses, top merchants, spending flow).
 5. Browse and re-categorise individual transactions on the **Transactions** page.
-6. Use the **Recategorise** button on the Dashboard to re-apply rules to all existing transactions after changing the rules file.
+6. Manage categorisation rules and categories on the **Rules** page (add, edit, enable/disable, delete rules; manage the category list via the Categories tab).
+7. Set and track spending budgets on the **Budgeting** page.
+8. Use the **Recategorise** button on the Dashboard to re-apply all rules to existing auto-categorised transactions.
 
 ## Project Structure
 
 ```
 backend/
   app/
-    routers/        # FastAPI endpoints (ingest, transactions, analytics, rules)
-    services/       # PDF parsers (AMEX, Chase), categoriser, dedup
+    routers/        # FastAPI endpoints (ingest, transactions, analytics, rules, categories, budgets, merchant_notes, auth)
+    services/       # PDF parsers (AMEX, Chase), categoriser, dedup, analytics
     models/         # SQLAlchemy ORM models
     schemas/        # Pydantic request/response schemas
   tests/            # pytest test suite
-  categorisation_rules.json
+  categorisation_rules.json  # Legacy seed file — rules now live in the database
 frontend/
   src/
-    pages/          # Dashboard, Upload, Transactions
-    components/     # Charts, DuplicateReviewModal
+    pages/          # Dashboard, Upload, Transactions, Rules, Settings, Budgeting
+    components/     # Charts (MonthlySpendByCategory, IncomeVsExpenses, SpendingFlow, MerchantBreakdown,
+                    #   CategoryMonthTable, CategoryPieChart, CategoryDrilldown, UnspentMoney),
+                    #   UploadZone, DuplicateReviewModal,
+                    #   RuleAddForm, RuleEditRow, RuleStats, CategoriesTab,
+                    #   BudgetForm, BudgetCreateChoice, BudgetComparison
+    hooks/          # useCategories, useFetch, useGraphSettings
     api/            # Typed API client
-data/               # Sample PDFs and SQLite database (gitignored)
+data/               # SQLite database (gitignored)
 main.py             # Root entry point for uvicorn
 ```
 
@@ -74,20 +81,13 @@ main.py             # Root entry point for uvicorn
 
 ## Category Management
 
-Categories are the core of the analytics — every chart, KPI, and table is grouped by category. There are two places to update when adding or removing a category:
-
-1. **`backend/categorisation_rules.json`** — controls how transactions are auto-categorised on import and via the Recategorise button.
-2. **Frontend `CATEGORIES` arrays** — controls which options appear in the UI dropdowns (filter bar on Transactions page, inline editor on the Dashboard table). There are two files:
-   - `frontend/src/pages/Transactions.tsx`
-   - `frontend/src/components/charts/CategoryMonthTable.tsx`
+Categories are the core of the analytics — every chart, KPI, and table is grouped by category. Both the category list and the categorisation rules are **managed entirely through the UI** on the **Rules page** and stored in the database.
 
 ### How rules work
 
-Each rule in `categorisation_rules.json` is a case-insensitive regex matched against the transaction description. Rules are evaluated **in order — the first match wins**. The file ends with a `"default_category"` (currently `"Other"`) used when no rule matches.
+Each rule is a case-insensitive regex matched against the transaction description. Rules are evaluated **in order of priority — the first match wins**. Transactions with no matching rule are assigned the default category (`"Other"`).
 
-```json
-{ "pattern": "REGEX_PATTERN", "category": "Category Name" }
-```
+Rules can be added, edited, reordered, toggled, and deleted on the **Rules** page. They are stored in the `CategorizationRule` database table — not in a flat file.
 
 ### Special categories (analytics behaviour)
 
