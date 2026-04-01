@@ -105,38 +105,15 @@ These category names have hardcoded meaning in the analytics engine:
 
 ### Adding a new category
 
-**Step 1 — add a rule to the rules file**
+**Step 1 — create the category**
 
-Open `backend/categorisation_rules.json` and insert a new rule object inside the `"rules"` array. Place it **before** any broader rules that might match the same transactions first.
+Go to the **Rules** page → **Categories** tab. Click **Add Category**, enter the name, and save. The category immediately becomes available in all UI dropdowns (it is served live from `/api/categories`).
 
-```json
-{
-  "rules": [
-    { "pattern": "EXISTING RULE", "category": "Existing Category" },
-    { "pattern": "MY NEW MERCHANT|ANOTHER NAME", "category": "My New Category" },
-    ...
-  ]
-}
-```
+**Step 2 — add a rule to match transactions**
 
-Patterns are standard regexes. Use `|` for alternatives, `\\b` for word boundaries, and `\\.` to match a literal dot. Test your regex at [regex101.com](https://regex101.com) with the ECMA or Python flavour.
+On the **Rules** page → **Rules** tab, click **Add Rule**. Enter a regex pattern and assign it to the new category. Place higher-priority rules above broader ones using the priority ordering.
 
-**Step 2 — add the category to both frontend CATEGORIES arrays**
-
-Open each of these two files and add the new category name to the `CATEGORIES` array:
-
-- `frontend/src/pages/Transactions.tsx` (line ~10)
-- `frontend/src/components/charts/CategoryMonthTable.tsx` (line ~13)
-
-```ts
-const CATEGORIES = [
-  "Groceries",
-  "My New Category",   // <-- add here
-  ...
-];
-```
-
-The order of this array determines the order in the dropdowns.
+Patterns are case-insensitive regexes. Use `|` for alternatives, `\b` for word boundaries. Test your regex at [regex101.com](https://regex101.com) with the Python flavour.
 
 **Step 3 — re-apply rules to existing transactions**
 
@@ -152,27 +129,21 @@ curl -X POST http://localhost:8000/api/transactions/recategorise
 
 ### Deleting a category
 
-**Step 1 — remove or update rules in the rules file**
+**Step 1 — update or remove rules that use this category**
 
-Open `backend/categorisation_rules.json` and either:
+On the **Rules** page → **Rules** tab, find any rules assigned to the category being deleted. Either delete them or reassign them to an existing category.
 
-- **Delete** the rule entirely if the pattern should fall through to a different category below it, or
-- **Change** the `"category"` value to redirect matching transactions to an existing category.
+**Step 2 — delete the category**
 
-**Step 2 — remove the category from both frontend CATEGORIES arrays**
+On the **Rules** page → **Categories** tab, click the delete icon next to the category. This cascades: any rules still assigned to it are also removed.
 
-Remove the entry from both:
-
-- `frontend/src/pages/Transactions.tsx`
-- `frontend/src/components/charts/CategoryMonthTable.tsx`
-
-> **Note:** Removing a category from the UI arrays only removes it from the dropdowns — it does not affect transactions already stored in the database with that category. Those will still appear in charts until recategorised.
+> **Note:** Deleting a category removes it from the dropdowns but does not retroactively recategorise transactions already stored with that category. Those will continue to appear in charts until recategorised.
 
 **Step 3 — re-apply rules and clean up existing transactions**
 
 Click **Recategorise** on the Dashboard (or `curl -X POST http://localhost:8000/api/transactions/recategorise`) to re-run rules against all auto-categorised transactions.
 
-If any transactions were **manually** set to the deleted category (i.e. you changed them via the UI), they will not be touched by the recategorise step. You can find and fix them on the **Transactions** page by filtering by the old category name.
+If any transactions were **manually** set to the deleted category, they will not be touched by the recategorise step. Find and fix them on the **Transactions** page by filtering by the old category name.
 
 ---
 
